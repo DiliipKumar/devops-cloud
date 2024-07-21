@@ -15,16 +15,17 @@ Configuring AWS CLI
 ```bash
 aws configure
 ```
-Configuring kubectl for EKS:
-```bash
-aws eks update-kubeconfig --name your-cluster-name
-```
 ## Install eks cluster using Fargate
 
 
 ```bash
  eksctl create cluster --name demo-cluster --region us-east-1 --fargate
 ```
+Configuring kubectl for EKS:
+```bash
+aws eks update-kubeconfig --name your-cluster-name
+```
+
 ## Delete the cluster
 
 
