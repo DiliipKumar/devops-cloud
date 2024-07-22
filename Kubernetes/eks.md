@@ -95,9 +95,24 @@ Reason:-alb controller is pod if it want to external and
 
  internal service of aws like  s3,load balancer
 
+# commands to configure IAM OIDC provider 
 
-```bash
- eksctl utils associate-iam-oidc-provider --cluster $cluster_name --approve
+```
+export cluster_name=demo-cluster
+```
+
+```
+oidc_id=$(aws eks describe-cluster --name $cluster_name --query "cluster.identity.oidc.issuer" --output text | cut -d '/' -f 5) 
+```
+
+## Check if there is an IAM OIDC provider configured already
+
+- aws iam list-open-id-connect-providers | grep $oidc_id | cut -d "/" -f4\n 
+
+If not, run the below command
+
+```
+eksctl utils associate-iam-oidc-provider --cluster $cluster_name --approve
 ```
 # How to setup alb add on
 
