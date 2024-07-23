@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/DiliipKumar/my-app', branch: 'master'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Verify the build directory exists and has files
+                    sh 'if [ ! -d build ]; then echo "Build directory does not exist"; exit 1; fi'
+                    
+                    // Check if the target directory exists
+                    sh 'if [ ! -d /usr/share/nginx/html ]; then echo "Nginx target directory does not exist"; exit 1; fi'
+                    
+                    // Copy build files to Nginx directory
+                    sh 'sudo cp -r build/* /usr/share/nginx/html/ || { echo "Failed to copy build files"; exit 1; }'
+                    
+                    // Adjust ownership to the correct user and group
+                    sh 'sudo chown -R www-data:www-data /usr/share/nginx/html/ || { echo "Failed to change ownership"; exit 1; }'
+                    
+                    // Reload Nginx to apply changes
+                    sh 'sudo systemctl reload nginx || { echo "Failed to reload Nginx"; exit 1; }'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
