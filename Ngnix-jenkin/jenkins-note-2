@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('checkout') {
+            steps {
+               checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/DiliipKumar/my-app.git']])
+            }
+        }
+        stage('buid docker image') {
+            steps {
+              sh 'docker build -t react-image:1 .'
+            }
+        }
+          stage('push to ecr') {
+            steps {
+               sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 381492183981.dkr.ecr.ap-south-1.amazonaws.com'
+               sh 'docker build -t react-app .'
+               sh 'docker tag react-app:latest 381492183981.dkr.ecr.ap-south-1.amazonaws.com/react-app:latest'
+               sh 'docker push 381492183981.dkr.ecr.ap-south-1.amazonaws.com/react-app:latest'
+            }
+        }
+        stage('run on server') {
+            steps {
+                sh 'docker stop $(docker ps -q --filter "name=reactapp") && docker rm $(docker ps -aq --filter "name=reactapp")'
+            
+               sh 'docker run -d -p 30:80 --name reactapp 381492183981.dkr.ecr.ap-south-1.amazonaws.com/react-app:latest'
+            }
+        }
+    }
+    
+}
